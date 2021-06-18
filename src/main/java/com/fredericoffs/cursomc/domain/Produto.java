@@ -16,7 +16,6 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
-@Table(name = "tb_produtos")
 public class Produto implements Serializable {
 
 	private static final long serialVersionUID = 1L;
