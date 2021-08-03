@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.fredericoffs.cursomc.domain.Categoria;
 import com.fredericoffs.cursomc.repositories.CategoriaRepository;
+import com.fredericoffs.cursomc.services.exception.DataIntegrityException;
 import com.fredericoffs.cursomc.services.exception.ObjectNotFoundException;
 
 @Service
@@ -34,4 +36,14 @@ public class CategoriaService {
 		findById(obj.getId());
 		return repository.save(obj);
 	}
+
+	public void delete(Integer id) {
+		findById(id);
+		try {
+			repository.deleteById(id);
+		} catch (DataIntegrityViolationException e) {
+			throw new DataIntegrityException("Não é possível excluir uma categoria que tem produtos.");
+		}
+	}
+
 }
