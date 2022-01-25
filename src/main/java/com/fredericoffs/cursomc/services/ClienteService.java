@@ -16,11 +16,14 @@ import org.springframework.stereotype.Service;
 import com.fredericoffs.cursomc.domain.Cidade;
 import com.fredericoffs.cursomc.domain.Cliente;
 import com.fredericoffs.cursomc.domain.Endereco;
+import com.fredericoffs.cursomc.domain.enums.Perfil;
 import com.fredericoffs.cursomc.domain.enums.TipoCliente;
 import com.fredericoffs.cursomc.dto.ClienteDTO;
 import com.fredericoffs.cursomc.dto.ClienteNewDTO;
 import com.fredericoffs.cursomc.repositories.ClienteRepository;
 import com.fredericoffs.cursomc.repositories.EnderecoRepository;
+import com.fredericoffs.cursomc.security.UserSS;
+import com.fredericoffs.cursomc.services.exception.AuthorizationException;
 import com.fredericoffs.cursomc.services.exception.DataIntegrityException;
 import com.fredericoffs.cursomc.services.exception.ObjectNotFoundException;
 
@@ -32,13 +35,21 @@ public class ClienteService {
 
 	@Autowired
 	private EnderecoRepository enderecoRepository;
-	
+
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
 	public Cliente findById(Integer id) {
+		
+		UserSS user = UserService.authenticated();
+		
+		if (user==null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+			throw new AuthorizationException("Acesso Negado!");
+		}
+		
 		Optional<Cliente> obj = clienteRepository.findById(id);
-		return obj.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado! Id: " + id + ", Tipo: " + Cliente.class.getName()));
+		return obj.orElseThrow(() -> new ObjectNotFoundException(
+				"Objeto não encontrado! Id: " + id + ", Tipo: " + Cliente.class.getName()));
 	}
 
 	public List<Cliente> findAll() {
@@ -78,7 +89,8 @@ public class ClienteService {
 	}
 
 	public Cliente fromDTO(ClienteNewDTO objDto) {
-		Cliente cli = new Cliente(null, objDto.getName(), objDto.getEmail(), objDto.getCpfOuCnpj(), TipoCliente.toEnum(objDto.getTipo()), passwordEncoder.encode(objDto.getSenha()));
+		Cliente cli = new Cliente(null, objDto.getName(), objDto.getEmail(), objDto.getCpfOuCnpj(), TipoCliente.toEnum(objDto.getTipo()),
+				passwordEncoder.encode(objDto.getSenha()));
 		Cidade cid = new Cidade(objDto.getCidadeId(), null, null);
 		Endereco end = new Endereco(null, objDto.getLogradouro(), objDto.getNumero(), objDto.getComplemento(), objDto.getBairro(), objDto.getCep(),
 				cli, cid);
@@ -97,5 +109,4 @@ public class ClienteService {
 		newObj.setName(obj.getName());
 		newObj.setEmail(obj.getEmail());
 	}
-
 }
