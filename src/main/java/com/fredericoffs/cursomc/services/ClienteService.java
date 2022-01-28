@@ -42,15 +42,18 @@ public class ClienteService {
 
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
-	
+
 	@Autowired
 	private ImageService imageService;
-	
-	@Value("${img.prefix.client.profile}")
-	private String prefix;
 
 	@Autowired
 	private S3Service s3Service;
+
+	@Value("${img.prefix.client.profile}")
+	private String prefix;
+
+	@Value("${img.profile.size}")
+	private Integer size;
 
 	public Cliente findById(Integer id) {
 
@@ -130,8 +133,12 @@ public class ClienteService {
 		}
 
 		BufferedImage jpgImage = imageService.getJpgImageFromFile(multipartFile);
-		String fileName = prefix + user.getId() + ".jpg";
 		
+		jpgImage = imageService.cropSquare(jpgImage);
+ 		jpgImage = imageService.resize(jpgImage, size);
+		
+		String fileName = prefix + user.getId() + ".jpg";
+
 		return s3Service.uploadFile(imageService.getInputStream(jpgImage, "jpg"), fileName, "image");
 	}
 }
