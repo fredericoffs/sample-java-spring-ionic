@@ -71,6 +71,21 @@ public class ClienteService {
 		return clienteRepository.findAll();
 	}
 
+	public Cliente findByEmail(String email) {
+		UserSS user = UserService.authenticated();
+
+		if (user == null || !user.hasRole(Perfil.ADMIN) && !email.equals(user.getUsername())) {
+			throw new AuthorizationException("Acesso Negado!");
+		}
+
+		Cliente obj = clienteRepository.findByEmail(email);
+		if (obj == null) {
+			throw new ObjectNotFoundException(
+					"Objeto não encontrado! Id: " + user.getId() + ", Tipo: " + Cliente.class.getName());
+		}
+		return obj;
+	}
+
 	@Transactional
 	public Cliente insert(Cliente obj) {
 		obj.setId(null);
@@ -133,10 +148,10 @@ public class ClienteService {
 		}
 
 		BufferedImage jpgImage = imageService.getJpgImageFromFile(multipartFile);
-		
+
 		jpgImage = imageService.cropSquare(jpgImage);
- 		jpgImage = imageService.resize(jpgImage, size);
-		
+		jpgImage = imageService.resize(jpgImage, size);
+
 		String fileName = prefix + user.getId() + ".jpg";
 
 		return s3Service.uploadFile(imageService.getInputStream(jpgImage, "jpg"), fileName, "image");
