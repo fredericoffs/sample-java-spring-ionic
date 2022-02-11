@@ -31,8 +31,9 @@ public class ProdutoResource {
 
 	@GetMapping
 	public ResponseEntity<Page<ProdutoDTO>> findPage(
-			@RequestParam(value = "name", defaultValue = "0") String name,
-			@RequestParam(value = "categorias", defaultValue = "0") String categorias, @RequestParam(value = "page", defaultValue = "0") Integer page,
+			@RequestParam(value = "name", defaultValue = "") String name,
+			@RequestParam(value = "categorias", defaultValue = "") String categorias, 
+			@RequestParam(value = "page", defaultValue = "0") Integer page,
 			@RequestParam(value = "linesPerPage", defaultValue = "24") Integer linesPerPage,
 			@RequestParam(value = "orderBy", defaultValue = "name") String orderBy,
 			@RequestParam(value = "direction", defaultValue = "ASC") String direction) {
